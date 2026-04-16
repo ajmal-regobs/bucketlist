@@ -1,0 +1,15 @@
+{
+  "name": "bucketlist",
+  "version": "1.0.0",
+  "description": "Simple bucket list app with HTML UI and Postgres backend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "pg": "^8.12.0"
+  }
+}

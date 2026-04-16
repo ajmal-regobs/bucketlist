@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>My Bucket List</title>
+    <style>
+      :root { color-scheme: light dark; }
+      body {
+        font-family: system-ui, -apple-system, sans-serif;
+        max-width: 640px;
+        margin: 3rem auto;
+        padding: 0 1rem;
+        line-height: 1.5;
+      }
+      h1 { margin-bottom: 1rem; }
+      form { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
+      input[type="text"] {
+        flex: 1;
+        padding: 0.6rem 0.8rem;
+        font-size: 1rem;
+        border: 1px solid #999;
+        border-radius: 6px;
+      }
+      button {
+        padding: 0.6rem 1rem;
+        font-size: 1rem;
+        border: 0;
+        border-radius: 6px;
+        background: #2d6cdf;
+        color: white;
+        cursor: pointer;
+      }
+      button:hover { background: #1f58bf; }
+      ul { list-style: none; padding: 0; margin: 0; }
+      li {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.7rem 0.9rem;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        margin-bottom: 0.5rem;
+      }
+      li .remove {
+        background: transparent;
+        color: #c0392b;
+        border: 1px solid #c0392b;
+        padding: 0.3rem 0.7rem;
+        font-size: 0.85rem;
+      }
+      li .remove:hover { background: #c0392b; color: white; }
+      .empty { color: #777; font-style: italic; }
+    </style>
+  </head>
+  <body>
+    <h1>My Bucket List</h1>
+
+    <form id="add-form">
+      <input id="title" type="text" placeholder="Something I want to do..." required />
+      <button type="submit">Add</button>
+    </form>
+
+    <ul id="list"></ul>
+
+    <script>
+      const listEl = document.getElementById('list');
+      const form = document.getElementById('add-form');
+      const titleInput = document.getElementById('title');
+
+      async function load() {
+        const res = await fetch('/api/items');
+        const items = await res.json();
+        listEl.innerHTML = '';
+        if (items.length === 0) {
+          const li = document.createElement('li');
+          li.className = 'empty';
+          li.textContent = 'Nothing yet — add your first dream above.';
+          listEl.appendChild(li);
+          return;
+        }
+        for (const item of items) {
+          const li = document.createElement('li');
+          const span = document.createElement('span');
+          span.textContent = item.title;
+          const btn = document.createElement('button');
+          btn.className = 'remove';
+          btn.textContent = 'Remove';
+          btn.onclick = () => remove(item.id);
+          li.appendChild(span);
+          li.appendChild(btn);
+          listEl.appendChild(li);
+        }
+      }
+
+      async function remove(id) {
+        await fetch(`/api/items/${id}`, { method: 'DELETE' });
+        load();
+      }
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const title = titleInput.value.trim();
+        if (!title) return;
+        await fetch('/api/items', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title }),
+        });
+        titleInput.value = '';
+        load();
+      });
+
+      load();
+    </script>
+  </body>
+</html>
